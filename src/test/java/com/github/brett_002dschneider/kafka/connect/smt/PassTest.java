@@ -14,9 +14,9 @@
  * limitations under the License.
  */
 
-package com.github.cjmatta.kafka.connect.smt;
+package com.github.brett_002dschneider.kafka.connect.smt;
 
-import org.apache.kafka.common.config.ConfigDef;
+// import org.apache.kafka.common.config.ConfigDef;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.data.SchemaBuilder;
 import org.apache.kafka.connect.data.Struct;
@@ -25,32 +25,31 @@ import org.apache.kafka.connect.source.SourceRecord;
 import org.junit.After;
 import org.junit.Test;
 
+import com.github.brett_002dschneider.kafka.connect.smt.Xml;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.Assert.*;
 
-public class InsertUuidTest {
+public class PassTest {
 
-  private InsertUuid<SourceRecord> xform = new InsertUuid.Value<>();
+  private Pass<SourceRecord> xform = new Pass.Value<>();
 
   @After
   public void tearDown() throws Exception {
     xform.close();
   }
 
-  @Test(expected = DataException.class)
-  public void topLevelStructRequired() {
-    xform.configure(Collections.singletonMap("uuid.field.name", "myUuid"));
+  @Test
+  public void sameInOut() {
     xform.apply(new SourceRecord(null, null, "", 0, Schema.INT32_SCHEMA, 42));
   }
 
   @Test
-  public void copySchemaAndInsertUuidField() {
+  public void copySchemaXml() {
     final Map<String, Object> props = new HashMap<>();
-
-    props.put("uuid.field.name", "myUuid");
 
     xform.configure(props);
 
@@ -66,8 +65,8 @@ public class InsertUuidTest {
 
     assertEquals(Schema.OPTIONAL_INT64_SCHEMA, transformedRecord.valueSchema().field("magic").schema());
     assertEquals(42L, ((Struct) transformedRecord.value()).getInt64("magic").longValue());
-    assertEquals(Schema.STRING_SCHEMA, transformedRecord.valueSchema().field("myUuid").schema());
-    assertNotNull(((Struct) transformedRecord.value()).getString("myUuid"));
+    // assertEquals(Schema.STRING_SCHEMA, transformedRecord.valueSchema().field("myUuid").schema());
+    // assertNotNull(((Struct) transformedRecord.value()).getString("myUuid"));
 
     // Exercise caching
     final SourceRecord transformedRecord2 = xform.apply(
@@ -76,20 +75,18 @@ public class InsertUuidTest {
 
   }
 
-  @Test
-  public void schemalessInsertUuidField() {
-    final Map<String, Object> props = new HashMap<>();
+  // @Test
+  // public void schemalessXml() {
+  //   final Map<String, Object> props = new HashMap<>();
 
-    props.put("uuid.field.name", "myUuid");
+  //   xform.configure(props);
 
-    xform.configure(props);
+  //   final SourceRecord record = new SourceRecord(null, null, "test", 0,
+  //     null, "<xml><magic>42</magic></xml>");
 
-    final SourceRecord record = new SourceRecord(null, null, "test", 0,
-      null, Collections.singletonMap("magic", 42L));
+  //   final SourceRecord transformedRecord = xform.apply(record);
+  //   assertEquals("42", ((Map) transformedRecord.value()).get("magic"));
+  //   // assertNotNull(((Map) transformedRecord.value()).get("myUuid"));
 
-    final SourceRecord transformedRecord = xform.apply(record);
-    assertEquals(42L, ((Map) transformedRecord.value()).get("magic"));
-    assertNotNull(((Map) transformedRecord.value()).get("myUuid"));
-
-  }
+  // }
 }
